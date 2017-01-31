@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jenkins" default="compile.module.jenkins">
+  <dirname property="module.jenkins.basedir" file="${ant.file.module_jenkins}"/>
+  
+  <property name="module.jdk.home.jenkins" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jenkins" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jenkins" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jenkins" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="jenkins.output.dir" value="${module.jenkins.basedir}/out/production/jenkins"/>
+  <property name="jenkins.testoutput.dir" value="${module.jenkins.basedir}/out/test/jenkins"/>
+  
+  <path id="jenkins.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jenkins.module.production.classpath">
+    <path refid="${module.jdk.classpath.jenkins}"/>
+  </path>
+  
+  <path id="jenkins.runtime.production.module.classpath">
+    <pathelement location="${jenkins.output.dir}"/>
+  </path>
+  
+  <path id="jenkins.module.classpath">
+    <path refid="${module.jdk.classpath.jenkins}"/>
+    <pathelement location="${jenkins.output.dir}"/>
+  </path>
+  
+  <path id="jenkins.runtime.module.classpath">
+    <pathelement location="${jenkins.testoutput.dir}"/>
+    <pathelement location="${jenkins.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jenkins">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jenkins">
+    <patternset refid="excluded.from.module.jenkins"/>
+  </patternset>
+  
+  <path id="jenkins.module.sourcepath">
+    <dirset dir="${module.jenkins.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jenkins" depends="compile.module.jenkins.production,compile.module.jenkins.tests" description="Compile module jenkins"/>
+  
+  <target name="compile.module.jenkins.production" depends="register.custom.compilers" description="Compile module jenkins; production classes">
+    <mkdir dir="${jenkins.output.dir}"/>
+    <javac2 destdir="${jenkins.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jenkins}/javac">
+      <compilerarg line="${compiler.args.jenkins}"/>
+      <bootclasspath refid="jenkins.module.bootclasspath"/>
+      <classpath refid="jenkins.module.production.classpath"/>
+      <src refid="jenkins.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jenkins"/>
+    </javac2>
+    
+    <copy todir="${jenkins.output.dir}">
+      <fileset dir="${module.jenkins.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jenkins.tests" depends="register.custom.compilers,compile.module.jenkins.production" description="compile module jenkins; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jenkins" description="cleanup module">
+    <delete dir="${jenkins.output.dir}"/>
+    <delete dir="${jenkins.testoutput.dir}"/>
+  </target>
+</project>
